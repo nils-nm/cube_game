@@ -1,5 +1,6 @@
 import pygame
 import random
+
 pygame.init()
 
 win = pygame.display.set_mode((500, 500))
