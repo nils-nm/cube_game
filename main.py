@@ -1,38 +1,39 @@
 import pygame
+import random
+
 pygame.init()
 
 win = pygame.display.set_mode((500, 500))
 
 pygame.display.set_caption('cube_game')
 
-x = 0
-y = 0
-width = 40
-height = 60
-vel = 5
 
+class Mob(object):
+    def __init__(self, x, y, width, height, vel):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = vel
+
+
+clock = pygame.time.Clock()
 run = True
-
+m = Mob(0, 100, 10, 10, 3)
 while run:
-    pygame.time.delay(100)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
     keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_d]:
-        x -= vel
-    if keys[pygame.K_a]:
-        x += vel
-    if keys[pygame.K_w]:
-        y -= vel
-    if keys[pygame.K_s]:
-        y += vel
+    m.x += 3
+    if m.x >= 500:
+        m.x = 0
 
     win.fill((0, 0, 0))
-    pygame.draw.rect(win, (255, 0, 0), (x, y, width, height), 1)
+    pygame.draw.rect(win, (255, 0, 0), (m.x, m.y, m.width, m.height))
     pygame.display.update()
 
+clock.tick(60)
 pygame.quit()
