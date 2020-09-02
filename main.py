@@ -9,17 +9,20 @@ pygame.display.set_caption('cube_game')
 
 
 class Mob(object):
-    def __init__(self, x, y, width, height, vel):
+    def __init__(self, x, y, width, height, vel, radius):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.vel = vel
+        self.radius = radius
 
 
 clock = pygame.time.Clock()
 run = True
-m = Mob(0, 100, 10, 10, 3)
+NoRot = True
+GoDown = False
+m = Mob(0, 100, 10, 10, 3, 10)
 while run:
 
     for event in pygame.event.get():
@@ -27,13 +30,22 @@ while run:
             run = False
 
     keys = pygame.key.get_pressed()
-    m.x += 3
-    if m.x >= 500:
-        m.x = 0
+    if NoRot is True:
+        m.x += 1
+    if GoDown is True:
+        m.y += 1
+    if m.y == 505:
+        m.x = -5
+        m.y = 100
+        NoRot = True
+        GoDown = False
+    if m.x >= 100:
+        NoRot = False
+        GoDown = True
 
     win.fill((0, 0, 0))
-    pygame.draw.rect(win, (255, 0, 0), (m.x, m.y, m.width, m.height))
+    pygame.draw.circle(win, (255, 0, 0), (m.x, m.y), m.radius)
     pygame.display.update()
 
-clock.tick(60)
+clock.tick(40)
 pygame.quit()
