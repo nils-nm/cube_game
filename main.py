@@ -1,51 +1,91 @@
 import pygame
-import random
+from copy import deepcopy
+from random import choice, randrange
+import math
+import time
 
-pygame.init()
+w, h = 20, 30
+tile = 15
+game_res = w * tile, h * tile
 
-win = pygame.display.set_mode((500, 500))
-
-pygame.display.set_caption('cube_game')
-
-
-class Mob(object):
-    def __init__(self, x, y, width, height, vel, radius):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.vel = vel
-        self.radius = radius
-
-
+win = pygame.display.set_mode(game_res)
 clock = pygame.time.Clock()
-run = True
-NoRot = True
-GoDown = False
-m = Mob(0, 100, 10, 10, 3, 10)
-while run:
 
+grid = [pygame.Rect(x * tile, y * tile, tile, tile) for x in range(w) for y in range(h)]
+
+figures_pos = [[(-1, 0), (-2, 0), (0, 0), (1, 0)],
+               [(0, -1), (-1, -1), (-1, 0), (0, 0)],
+               [(-1, 0), (-1, 1), (0, 0), (0, -1)],
+               [(0, 0), (-1, 0), (0, 1), (-1, -1)],
+               [(0, 0), (0, -1), (0, 1), (-1, -1)],
+               [(0, 0), (0, -1), (0, 1), (-1, -1)],
+               [(0, 0), (0, -1), (0, 1), (-1, 0)]]
+
+figures = [[pygame.Rect(x + w // 2, y + 1, 1, 1) for x, y in fig_pos] for fig_pos in figures_pos]
+figure_rect = pygame.Rect(0, 0, tile - 2, tile - 2)
+field = [[0 for i in range(w)] for j in range(h)]
+
+anim_count, anim_speed, anim_limit = 0, 60, 2000
+figure = deepcopy(choice(figures))
+
+
+def check_borders():
+    if figure[i].x < 0 or figure[i].x > w - 1:
+        return False
+    elif figure[i].y > h - 1 or field[figure[i].y][figure[i].x]:
+        return False
+    return True
+
+
+while True:
+
+    dx, rotate = 0, False
+    win.fill((0, 0, 0))
+
+    # control
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
-
-    keys = pygame.key.get_pressed()
-    if NoRot is True:
-        m.x += 1
-    if GoDown is True:
-        m.y += 1
-    if m.y == 505:
-        m.x = -5
-        m.y = 100
-        NoRot = True
-        GoDown = False
-    if m.x >= 100:
-        NoRot = False
-        GoDown = True
-
-    win.fill((0, 0, 0))
-    pygame.draw.circle(win, (255, 0, 0), (m.x, m.y), m.radius)
+            exit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                dx = -1
+            elif event.key == pygame.K_RIGHT:
+                dx = 1
+            elif event.key == pygame.K_DOWN:
+                anim_limit = 10
+    # move x
+    figure_old = deepcopy(figure)
+    for i in range(4):
+        figure[i].x += dx
+        if not check_borders():
+            figure = deepcopy(figure_old)
+            break
+    # move y
+    anim_count += anim_speed
+    if anim_count > anim_limit:
+        anim_count = 0
+        figure_old = deepcopy(figure)
+        for i in range(4):
+            figure[i].y += 1
+            if not check_borders():
+                for i in range(4):
+                    field[figure_old[i].y][figure_old[i].x] = (255, 255, 255)
+                figure = deepcopy(choice(figures))
+                anim_limit = 2000
+                break
+    # draw grid
+    [pygame.draw.rect(win, (40, 40, 40), i_rect, 1) for i_rect in grid]
+    # draw figure
+    for i in range(4):
+        figure_rect.x = figure[i].x * tile
+        figure_rect.y = figure[i].y * tile
+        pygame.draw.rect(win, (255, 255, 255), figure_rect)
+    # draw field
+    for y, raw in enumerate(field):
+        for x, col in enumerate(raw):
+            if col:
+                figure_rect.x, figure_rect.y = x * tile, y * tile
+                pygame.draw.rect(win, col, figure_rect)
     pygame.display.update()
+    clock.tick(60)
 
-clock.tick(40)
-pygame.quit()
